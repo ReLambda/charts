@@ -112,6 +112,7 @@ spec:
             {{- else }}
               value: "no"
             {{- end }}
+            {{- if $.Values.auth.enabled }}
             {{- if $.Values.usePasswordFile }}
             - name: MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD_FILE
               value: "/bitnami/mongodb/secrets/mongodb-root-password"
@@ -129,6 +130,9 @@ spec:
                   name: {{ include "mongodb-sharded.secret" $ }}
                   key: mongodb-replica-set-key
             {{- end }}
+            {{- end }}
+            - name: ALLOW_EMPTY_PASSWORD
+              value: {{ ternary "no" "yes" .Values.auth.enabled | quote }}
             {{- if $.Values.shardsvr.arbiter.mongodbExtraFlags }}
             - name: MONGODB_EXTRA_FLAGS
               value: {{ $.Values.shardsvr.arbiter.mongodbExtraFlags | join " " | quote }}
@@ -177,7 +181,7 @@ spec:
             - name: config
               mountPath: /bitnami/mongodb/conf/
             {{- end }}
-            {{- if $.Values.usePasswordFile }}
+            {{- if $.Values.auth.usePasswordFile }}
             - name: secrets
               mountPath: /bitnami/mongodb/secrets/
             {{- end }}
@@ -206,7 +210,7 @@ spec:
             runAsUser: {{ $.Values.securityContext.runAsUser }}
           {{- end }}
           env:
-          {{- if $.Values.usePasswordFile }}
+          {{- if $.Values.auth.usePasswordFile }}
             - name: MONGODB_ROOT_PASSWORD_FILE
               value: "/bitnami/mongodb/secrets/mongodb-root-password"
           {{- else }}
@@ -221,7 +225,7 @@ spec:
             - -ec
             - |-
               #!/bin/sh
-              {{- if $.Values.usePasswordFile }}
+              {{- if $.Values.auth.usePasswordFile }}
               export MONGODB_ROOT_PASSWORD="$(cat "${MONGODB_ROOT_PASSWORD_FILE}")"
               {{- end }}
               /bin/mongodb_exporter --mongodb.uri mongodb://root:`echo $MONGODB_ROOT_PASSWORD | sed -r "s/@/%40/g;s/:/%3A/g"`@localhost:{{ $.Values.service.port }}/admin {{ $.Values.metrics.extraArgs }}
@@ -269,7 +273,7 @@ spec:
           configMap:
             name: {{ include "mongodb-sharded.shardsvr.arbiter.configCM" $ }}
         {{- end }}
-        {{- if $.Values.usePasswordFile }}
+        {{- if $.Values.auth.usePasswordFile }}
         - name: secrets
           secret:
             secretName: {{ include "mongodb-sharded.secret" $ }}

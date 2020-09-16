@@ -105,7 +105,8 @@ spec:
             - name: MONGODB_ADVERTISED_HOSTNAME
               value: "$(MONGODB_POD_NAME).{{ include "mongodb-sharded.fullname" . }}-headless.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}"
               {{- end }}
-            {{- if .Values.usePasswordFile }}
+            {{- if .Values.auth.enabled }}
+            {{- if .Values.auth.usePasswordFile }}
             - name: MONGODB_ROOT_PASSWORD_FILE
               value: "/bitnami/mongodb/secrets/mongodb-root-password"
             - name: MONGODB_REPLICA_SET_KEY_FILE
@@ -122,6 +123,9 @@ spec:
                   name: {{ include "mongodb-sharded.secret" . }}
                   key: mongodb-replica-set-key
             {{- end }}
+            {{- end }}
+            - name: ALLOW_EMPTY_PASSWORD
+              value: {{ ternary "no" "yes" .Values.auth.enabled | quote }}
             - name: MONGODB_ENABLE_IPV6
             {{- if .Values.common.mongodbEnableIPv6 }}
               value: "yes"
@@ -200,7 +204,7 @@ spec:
             - name: config
               mountPath: /bitnami/mongodb/conf/
             {{- end }}
-            {{- if .Values.usePasswordFile }}
+            {{- if .Values.auth.usePasswordFile }}
             - name: secrets
               mountPath: /bitnami/mongodb/secrets/
             {{- end }}
@@ -229,7 +233,8 @@ spec:
             runAsUser: {{ .Values.securityContext.runAsUser }}
           {{- end }}
           env:
-          {{- if .Values.usePasswordFile }}
+          {{- if .Values.auth.enabled }}
+          {{- if .Values.auth.usePasswordFile }}
             - name: MONGODB_ROOT_PASSWORD_FILE
               value: "/bitnami/mongodb/secrets/mongodb-root-password"
           {{- else }}
@@ -239,16 +244,17 @@ spec:
                   name: {{ include "mongodb-sharded.secret" . }}
                   key: mongodb-root-password
           {{- end }}
+          {{- end }}
           command:
             - sh
             - -ec
             - |-
               #!/bin/sh
-              {{- if .Values.usePasswordFile }}
+              {{- if .Values.auth.usePasswordFile }}
               export MONGODB_ROOT_PASSWORD="$(cat "${MONGODB_ROOT_PASSWORD_FILE}")"
               {{- end }}
               /bin/mongodb_exporter --mongodb.uri mongodb://root:`echo $MONGODB_ROOT_PASSWORD | sed -r "s/@/%40/g;s/:/%3A/g"`@localhost:{{ .Values.service.port }}/admin {{ .Values.metrics.extraArgs }}
-          {{- if .Values.usePasswordFile }}
+          {{- if .Values.auth.usePasswordFile }}
           volumeMounts:
             - name: secrets
               mountPath: /bitnami/mongodb/secrets/
@@ -290,7 +296,7 @@ spec:
         - name: replicaset-entrypoint-configmap
           configMap:
             name: {{ include "mongodb-sharded.fullname" . }}-replicaset-entrypoint
-        {{- if .Values.usePasswordFile }}
+        {{- if .Values.auth.usePasswordFile }}
         - name: secrets
           secret:
             secretName: {{ include "mongodb-sharded.secret" . }}

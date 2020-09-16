@@ -14,7 +14,7 @@ global: {}
 image:
   registry: docker.io
   repository: bitnami/mongodb-sharded
-  tag: 4.4-debian-10
+  tag: 4.4.1-debian-10-r0
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -40,40 +40,34 @@ nameOverride:
 ##
 fullnameOverride:
 
-auth:
-  ## Enable authentication
-  ## ref: https://docs.mongodb.com/manual/tutorial/enable-authentication/
-  ##
-  enabled: true
-  ## MongoDB root password
-  ## ref: https://github.com/bitnami/bitnami-docker-mongodb/blob/master/README.md#setting-the-root-password-on-first-run
-  ##
-  ## If set to null it will be randomly generated
-  ## ref: https://github.com/bitnami/bitnami-docker-mongodb/blob/master/README.md#setting-the-root-password-on-first-run
-  rootPassword: ""
-  ## MongoDB custom user and database
-  ## ref: https://github.com/bitnami/bitnami-docker-mongodb/blob/master/README.md#creating-a-user-and-database-on-first-run
-  ##
-  # username: username
-  # password: password
-  # database: database
-  ## Replica Set key (shared for shards and config servers)
-  ## ref:
-  ##
-  ## replicaSetKey: testkey123
-  ##
+## MongoDB credentials
+##
 
-  replicaSetKey: key1234
+## MongoDB root password
+## If set to null it will be randomly generated
+## ref: https://github.com/bitnami/bitnami-docker-mongodb/blob/master/README.md#setting-the-root-password-on-first-run
+##
+## mongodbRootPassword: password
+##
+mongodbRootPassword:
 
-  ## Existing secret with MongoDB credentials
-  ## NOTE: When it's set the previous parameters are ignored.
-  ##
-  # existingSecret: name-of-existing-secret
+## Replica Set key (shared for shards and config servers)
+## ref:
+##
+## replicaSetKey: testkey123
+##
+replicaSetKey:
 
+## Name of a secret containing all the credentials above
+## ref:
+##
+## existingSecret: name-of-existing-secret
+##
+existingSecret:
 
-  ## Mount credentials as files instead of using environment variables
-  ##
-  usePasswordFile: false
+## Mount credentials as files instead of using environment variables
+##
+usePasswordFile: false
 
 ## Number of MongoDB Shards
 ## ref: https://docs.mongodb.com/manual/core/sharded-cluster-shards/

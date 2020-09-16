@@ -50,7 +50,7 @@ auth:
   ##
   ## If set to null it will be randomly generated
   ## ref: https://github.com/bitnami/bitnami-docker-mongodb/blob/master/README.md#setting-the-root-password-on-first-run
-  rootPassword: ""
+  mongodbRootPassword: ""
   ## MongoDB custom user and database
   ## ref: https://github.com/bitnami/bitnami-docker-mongodb/blob/master/README.md#creating-a-user-and-database-on-first-run
   ##
